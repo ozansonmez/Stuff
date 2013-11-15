@@ -1,0 +1,47 @@
+FINAL BIG DATA
+
+
+## Create a few folders, the websites told me to do this in order to make tables
+## in Hive. 
+$ hadoop fs -mkdir /tmp
+$ hadoop fs -mkdir /user/hive/warehouse
+$ hadoop fs -chmod g+w /tmp
+$ hadoop fs -chmod g+w /user/hive/warehouse 
+
+##Load Data From the Bucket
+
+$ hadoop fs -mkdir input
+$ hadoop distcp s3://sta250bucket/groups.txt input
+
+##Go to hive
+
+$hive
+
+##Create Table in Hive
+hive> CREATE TABLE teezBIGtable(
+	group INT,
+	value DOUBLE
+	)	
+	ROW FORMAT DELIMITED
+	FIELDS TERMINATED BY '\t'
+	STORED AS TEXTFILE;
+
+##Load Data into Table
+hive> LOAD DATA INPATH '/user/hadoop/input/groups.txt' OVERWRITE INTO TABLE teezBIGtable;
+
+##Execute commands
+## the first line 
+hive> INSERT OVERWRITE DIRECTORY '/user/hadoop/output/finalsummary/'
+    > SELECT group, avg(value), variance(value) FROM teezBIGtable
+    > GROUP by group;
+
+##Quite Hive and go back to hadoop
+
+hive>quit;
+
+##Bring the file from the hadoop fs to your local directory 
+##and save it in a folder called summary
+
+$ hadoop fs -get /user/hadoop/output/finalsummary summary
+
+##Celebrate and dance around like an animal
